@@ -125,6 +125,18 @@ patients_dates = patients_dates_naissance.withColumn(
     )
 )
 
+
+
 patients_dates.select("ipp", "date_deces", "date_deces_fhir").show()
+
+#regroupement des addresses sous le meme ipp_trouve pr trouver adresse actuelle
+
+adresses_bon_ipp = df_adresses.join(
+    mapping_ipp,
+    on="ipp",
+    how="left"
+)
+
+adresses_bon_ipp.select("ipp", "ligne_adresse", "type_adresse", "date_debut", "date_fin", "ipp_trouve").show(truncate=False)
 spark.stop()
  

@@ -23,7 +23,7 @@ df_opposition = spark.read.csv("resources/opposition_recherche.csv", header=True
 
 print(df_patients.columns)
 
-#df_patients.show()
+df_patients.show()
 
 print(df_adresses.columns)
 #df_adresses.show()
@@ -32,7 +32,7 @@ print(df_identifiants_ipp.columns)
 #df_identifiants_ipp.show()
 
 print(df_opposition.columns)
-#df_opposition.show()
+df_opposition.show()
 
 #join de la table df_indentifiants avec elle même
 
@@ -150,12 +150,26 @@ adresses_actuelles = adresses_bon_ipp.join(  derniere_date_patient, on="ipp_trou
     how="inner"
 )
 
+
+#filtre pour garder que les ligne ou la date de debut correspon a celle debut_max
 adresses_actuelles = adresses_actuelles.filter(
     col("date_debut") == col("date_debut_max")
 )
 
 adresses_actuelles.select("ipp_trouve", "ligne_adresse", "ville", "date_debut").show(truncate=False)
 
+
+
+#Oposition
+
+#jointure entre opposition et mapping_ipp
+opposition_bon_ipp = df_opposition.join(mapping_ipp, on="ipp", how="left"
+)
+opposition_bon_ipp.show()
+#filtrage du patient qui n'a aucune IPP 
+
+opposition_sans_null = opposition_bon_ipp.filter(col("ipp_trouve").isNotNull())
+opposition_sans_null.show()
 
 
 spark.stop()

@@ -30,6 +30,7 @@ jusqu'à ce qu'un marche. Point à noter : l'ordre entre yyyy-MM-dd et
 dd-MM-yyyy peut être ambigu sur certaines dates (genre 05-03-1990), j'ai mis
 le format ISO en premier mais c'est une hypothèse, pas une certitude à 100%
 
+filtrage dans opposition du patient dont l'ipp ne correspond a personne
 ## Anomalies  dans  CSV
 
  Virgule en trop à la fin du header de patients.csv colonne _c8
@@ -38,3 +39,5 @@ La colonne prenoms contient un tableau JSON écrit en texte
   (["Marie","Claire"]), avec des guillemets doublés à l'intérieur. Réglé avec  escape='"'.
  Sexe écrit de 6-7 façons différente.
 Formats de date incohérents
+
+dans opposition il y a un patient dont l'ipp ne correspond a personne 

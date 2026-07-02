@@ -1,6 +1,6 @@
 
 from pyspark.sql import SparkSession
- 
+from pyspark.sql.functions import col, when
 
 spark = SparkSession.builder.appName("aphp-pipeline").getOrCreate()
  
@@ -32,6 +32,17 @@ df_identifiants_ipp.show()
 print(df_opposition.columns)
 df_opposition.show()
 
+#join de la table df_indentifiants avec elle même
+
+a = df_identifiants_ipp.alias("a")
+b = df_identifiants_ipp.alias("b")
+
+resolution_ipp = a.join( b ,  on= col("a.ipp_principal") == col("b.ipp"), how = "left")
+
+resolution_ipp.select(
+    col("a.ipp"), col("a.statut"), col("a.ipp_principal"),
+    col("b.statut").alias("statut_droite")
+).show()
 
 spark.stop()
  

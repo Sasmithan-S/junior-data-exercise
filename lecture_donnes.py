@@ -189,17 +189,58 @@ opposition_resolu.show()
  
 patient_assemble = patients_dates.join( adresses_actuelles,
     on="ipp_trouve",
-    how="left"
+ how="left"
 )
-
-patient_assemble = patient_assemble.join(
-    opposition_resolu,
+patient_assemble = patient_assemble.join( opposition_resolu,
     on="ipp_trouve",
     how="left"
 )
 
 patient_assemble.show(truncate=False)
 
+
+#reduction adresse_actuelle et opposition_resolu avant jointure, on a vraiment besoin de joindre que ipp_trouve + les colonnes utiles
+
+adresses_reduit = adresses_actuelles.select( "ipp_trouve",
+    "ligne_adresse",
+    "code_postal",
+    "ville",
+    "pays"
+)
+
+opposition_reduit = opposition_resolu.select(
+    "ipp_trouve",
+    "opposition_fhir"
+)
+
+
+patient_assemble = patients_dates.join(
+    adresses_reduit,
+    on="ipp_trouve",
+    how="left"
+)
+
+patient_assemble = patient_assemble.join(
+    opposition_reduit,
+    on="ipp_trouve",
+    how="left"
+)
+
+
+patient_final = patient_assemble.select( col("ipp_trouve").alias("ipp"),  "nom_naissance",
+    "nom_usuel",
+    "prenoms_liste",
+    "sexe_fhir",
+    "date_naissance_fhir",
+    "date_deces_fhir",
+    "ligne_adresse",
+  "code_postal",
+    "ville",
+    "pays",
+    "opposition_fhir"
+)
+
+patient_final.show(truncate=False)
 
 spark.stop()
  

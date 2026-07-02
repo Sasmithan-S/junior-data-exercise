@@ -31,6 +31,7 @@ dd-MM-yyyy peut être ambigu sur certaines dates (genre 05-03-1990), j'ai mis
 le format ISO en premier mais c'est une hypothèse, pas une certitude à 100%
 
 filtrage dans opposition du patient dont l'ipp ne correspond a personne
+De la meme facon que pour le sexe des patients, j'ai mis en majuscule les opposition des clients pour associer un boolean aux choix
 ## Anomalies  dans  CSV
 
  Virgule en trop à la fin du header de patients.csv colonne _c8

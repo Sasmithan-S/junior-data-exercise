@@ -172,5 +172,16 @@ opposition_sans_null = opposition_bon_ipp.filter(col("ipp_trouve").isNotNull())
 opposition_sans_null.show()
 
 
+#resolution du format de opposition selon la fhir
+opposition_resolu  = opposition_sans_null.withColumn(
+    "opposition_fhir",
+    when(upper(trim(col("opposition"))).isin("O", "OUI", "TRUE", "OPPOSÉ"), True)
+    .when(upper(trim(col("opposition"))).isin("N", "NON", "FALSE", "0"), False)
+    .otherwise(None)
+)
+
+opposition_resolu.show()
+
+
 spark.stop()
  

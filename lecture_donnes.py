@@ -52,5 +52,23 @@ resolution_ipp.select(
     col("ipp_trouve")
 ).show()
 
+mapping_ipp = resolution_ipp.select( col("a.ipp").alias("ipp"),
+    col("ipp_trouve")
+)
+
+mapping_ipp.show()
+
+
+# join entre patients et mapping
+
+
+patients_bon_ipp = df_patients.join(
+    mapping_ipp,
+    on = "ipp",
+    how = "left"
+)
+
+patients_bon_ipp.show()
+
 spark.stop()
  

@@ -302,7 +302,32 @@ patient_fhir = patient_fhir.withColumn(
     when(col("date_deces_fhir").isNull(), False)
 )
 
+#pas fait pour la partie opposition_recherche 
+
+
+
+
+# Dernier Assemblage 
+
+patient_final_fhir = patient_fhir.select(
+    col("ipp").alias("id"),  "identifier",
+    "name",
+    col("sexe_fhir").alias("gender") ,
+    col("date_naissance_fhir").alias("birthDate"),
+    "deceasedBoolean",
+    "deceasedDateTime",
+    "address",
+    "opposition_fhir"
+)
+
+patient_final_fhir.show(truncate=False)
+
+
 patient_fhir.select("ipp", "deceasedDateTime", "deceasedBoolean").show()
+
+
+#ecriture de la sortie
+patient_final_fhir.write.mode("overwrite").json("output/patient_fhir")
 
 spark.stop()
  

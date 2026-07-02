@@ -33,6 +33,13 @@ le format ISO en premier mais c'est une hypothèse, pas une certitude à 100%
 filtrage dans opposition du patient dont l'ipp ne correspond a personne
 De la meme facon que pour le sexe des patients, j'ai mis en majuscule les opposition des clients pour associer un boolean aux choix
 
+-> dans json adresse vide représentée par une liste vide plutôt qu'un objet avec des champs null, pour éviter d'implier une donnée existante mais incomplète
+
+-> Si on a une date de décès (date_deces_fhir non vide) on utilise deceasedDateTime, plus précis, on ne le gâche pas.
+Sinon -> deceasedBoolean = false, on suppose que il n'y a pas de date de décès connue = vivant 
+
+
+
 
 Pour la table des patients assemblé, je fais une double jointure left a partir de patient_dates car il y a des patient sans adresse / sans oppositions.
 ## Anomalies  dans  CSV

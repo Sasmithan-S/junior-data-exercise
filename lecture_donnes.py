@@ -88,6 +88,8 @@ patients_prenoms_liste = patients_prenoms_liste.withColumn( "prenoms_liste", tra
 
 #retrait des doublons mtn que les cases avec espaces sont similaires 
 
+patients_prenoms_liste = patients_prenoms_liste.drop("prenoms")
+
 patients_sans_doublons = patients_prenoms_liste.drop_duplicates()
 #patients_sans_doublons.select("ipp", "prenoms_liste").show(truncate=False)
 
@@ -174,17 +176,29 @@ opposition_sans_null = opposition_bon_ipp.filter(col("ipp_trouve").isNotNull())
 
 
 #resolution du format de opposition selon la fhir
-opposition_resolu  = opposition_sans_null.withColumn(
-    "opposition_fhir",
-    when(upper(trim(col("opposition"))).isin("O", "OUI", "TRUE", "OPPOSÉ"), True)
+opposition_resolu  = opposition_sans_null.withColumn( "opposition_fhir", when(upper(trim(col("opposition"))).isin("O", "OUI", "TRUE", "OPPOSÉ"), True)
     .when(upper(trim(col("opposition"))).isin("N", "NON", "FALSE", "0"), False)
     .otherwise(None)
 )
 
+opposition_resolu = opposition_resolu.filter(col("ipp") == col("ipp_trouve"))
+
 opposition_resolu.show()
 
 #assemblage de la table des patients
+ 
+patient_assemble = patients_dates.join( adresses_actuelles,
+    on="ipp_trouve",
+    how="left"
+)
 
+patient_assemble = patient_assemble.join(
+    opposition_resolu,
+    on="ipp_trouve",
+    how="left"
+)
+
+patient_assemble.show(truncate=False)
 
 
 spark.stop()

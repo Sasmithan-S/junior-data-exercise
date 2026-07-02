@@ -32,6 +32,9 @@ le format ISO en premier mais c'est une hypothèse, pas une certitude à 100%
 
 filtrage dans opposition du patient dont l'ipp ne correspond a personne
 De la meme facon que pour le sexe des patients, j'ai mis en majuscule les opposition des clients pour associer un boolean aux choix
+
+
+Pour la table des patients assemblé, je fais une double jointure left a partir de patient_dates car il y a des patient sans adresse / sans oppositions.
 ## Anomalies  dans  CSV
 
  Virgule en trop à la fin du header de patients.csv colonne _c8

@@ -1,6 +1,6 @@
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, from_json , trim
+from pyspark.sql.functions import col, when, from_json , trim, transform
 from pyspark.sql.types import ArrayType, StringType
 
 
@@ -84,7 +84,13 @@ patients_prenoms_liste = patients_sans_doublons_ipp.withColumn(
     "prenoms_liste",
     from_json(col("prenoms"), schema_prenoms)
 )
+
 patients_prenoms_liste.select("ipp", "prenoms", "prenoms_liste").show(truncate=False)
+#application de trim pr chaque prenom
+patients_prenoms_liste = patients_prenoms_liste.withColumn( "prenoms_liste", transform(col("prenoms_liste"), lambda prenom: trim(prenom))
+)
+
+patients_prenoms_liste.select("ipp", "prenoms_liste").show(truncate=False)
 
 spark.stop()
  

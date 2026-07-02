@@ -1,6 +1,6 @@
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, from_json , trim, transform
+from pyspark.sql.functions import col, when, from_json , trim, transform, upper
 from pyspark.sql.types import ArrayType, StringType
 
 
@@ -90,6 +90,16 @@ patients_prenoms_liste.select("ipp", "prenoms_liste").show(truncate=False)
 
 patients_sans_doublons = patients_prenoms_liste.drop_duplicates()
 patients_sans_doublons.select("ipp", "prenoms_liste").show(truncate=False)
+
+
+# resolution du sexe des infividus en fonction selon les normes fhir, mise en majuscule avec upper pour pas lister variantes 
+
+patients_sexe_normalise = patients_sans_doublons.withColumn("sexe_fhir", when(upper(trim(col("sexe"))).isin("M", "HOMME", "MALE", "1"), "male")
+    .when(upper(trim(col("sexe"))).isin("F", "FEMME", "FEMALE", "2"), "female")
+    .otherwise("unknown")
+)
+
+patients_sexe_normalise.select("ipp", "sexe", "sexe_fhir").show()
 
 spark.stop()
  

@@ -1,6 +1,6 @@
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, from_json , trim, transform, upper
+from pyspark.sql.functions import col, when, from_json , trim, transform, upper , try_to_date , coalesce
 from pyspark.sql.types import ArrayType, StringType
 
 
@@ -100,6 +100,20 @@ patients_sexe_normalise = patients_sans_doublons.withColumn("sexe_fhir", when(up
 )
 
 patients_sexe_normalise.select("ipp", "sexe", "sexe_fhir").show()
+
+
+#resolution du format des date de naissance selon les normes fhir
+#utilisation de coalesce pour traiter les differents format de la table
+patients_dates_naissance = patients_sexe_normalise.withColumn(
+    "date_naissance_fhir",
+    coalesce( try_to_date(col("date_naissance"), "yyyy-MM-dd"),
+        try_to_date(col("date_naissance"), "dd/MM/yyyy"),
+        try_to_date(col("date_naissance"), "dd-MM-yyyy"),
+        try_to_date(col("date_naissance"), "yyyy/MM/dd")
+    )
+)
+patients_dates_naissance.select("ipp", "date_naissance", "date_naissance_fhir").show()
+
 
 spark.stop()
  

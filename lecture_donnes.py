@@ -23,7 +23,7 @@ df_opposition = spark.read.csv("resources/opposition_recherche.csv", header=True
 
 print(df_patients.columns)
 
-df_patients.show()
+#df_patients.show()
 
 print(df_adresses.columns)
 #df_adresses.show()
@@ -32,7 +32,7 @@ print(df_identifiants_ipp.columns)
 #df_identifiants_ipp.show()
 
 print(df_opposition.columns)
-df_opposition.show()
+#df_opposition.show()
 
 #join de la table df_indentifiants avec elle même
 
@@ -78,18 +78,18 @@ patients_prenoms_liste = patients_sans_doublons_ipp.withColumn(
     from_json(col("prenoms"), schema_prenoms)
 )
 
-patients_prenoms_liste.select("ipp", "prenoms", "prenoms_liste").show(truncate=False)
+#patients_prenoms_liste.show(truncate=False)
 #application de trim pr chaque prenom
 patients_prenoms_liste = patients_prenoms_liste.withColumn( "prenoms_liste", transform(col("prenoms_liste"), lambda prenom: trim(prenom))
 )
 
-patients_prenoms_liste.select("ipp", "prenoms_liste").show(truncate=False)
+#patients_prenoms_liste.show(truncate=False)
 
 
 #retrait des doublons mtn que les cases avec espaces sont similaires 
 
 patients_sans_doublons = patients_prenoms_liste.drop_duplicates()
-patients_sans_doublons.select("ipp", "prenoms_liste").show(truncate=False)
+#patients_sans_doublons.select("ipp", "prenoms_liste").show(truncate=False)
 
 
 # resolution du sexe des infividus en fonction selon les normes fhir, mise en majuscule avec upper pour pas lister variantes 
@@ -99,7 +99,7 @@ patients_sexe_normalise = patients_sans_doublons.withColumn("sexe_fhir", when(up
     .otherwise("unknown")
 )
 
-patients_sexe_normalise.select("ipp", "sexe", "sexe_fhir").show()
+#patients_sexe_normalise.show()
 
 
 #resolution du format des date de naissance selon les normes fhir
@@ -112,7 +112,7 @@ patients_dates_naissance = patients_sexe_normalise.withColumn(
         try_to_date(col("date_naissance"),"yyyy/MM/dd")
     )
 )
-patients_dates_naissance.select("ipp", "date_naissance", "date_naissance_fhir").show()
+#patients_dates_naissance.show()
 
 # Meme chose pour les date de deces
 patients_dates = patients_dates_naissance.withColumn(
@@ -126,7 +126,7 @@ patients_dates = patients_dates_naissance.withColumn(
 
 
 
-patients_dates.select("ipp", "date_deces", "date_deces_fhir").show()
+patients_dates.show(truncate=False)
 
 #regroupement des addresses sous le meme ipp_trouve pr trouver adresse actuelle
 
@@ -143,7 +143,7 @@ derniere_date_patient = adresses_bon_ipp.groupBy("ipp_trouve").agg(
     s_max("date_debut").alias("date_debut_max")
 )
 
-derniere_date_patient.show()
+#derniere_date_patient.show()
 
 #join sur ipp trouve pour recopier la date max a chaque ligne d'un patient , INNER pour retirer ceux qui ont pas de correspodance
 adresses_actuelles = adresses_bon_ipp.join(  derniere_date_patient, on="ipp_trouve",
@@ -156,7 +156,7 @@ adresses_actuelles = adresses_actuelles.filter(
     col("date_debut") == col("date_debut_max")
 )
 
-adresses_actuelles.select("ipp_trouve", "ligne_adresse", "ville", "date_debut").show(truncate=False)
+adresses_actuelles.show(truncate=False)
 
 
 
@@ -165,11 +165,12 @@ adresses_actuelles.select("ipp_trouve", "ligne_adresse", "ville", "date_debut").
 #jointure entre opposition et mapping_ipp
 opposition_bon_ipp = df_opposition.join(mapping_ipp, on="ipp", how="left"
 )
-opposition_bon_ipp.show()
+#opposition_bon_ipp.show()
+
 #filtrage du patient qui n'a aucune IPP 
 
 opposition_sans_null = opposition_bon_ipp.filter(col("ipp_trouve").isNotNull())
-opposition_sans_null.show()
+#opposition_sans_null.show()
 
 
 #resolution du format de opposition selon la fhir
@@ -181,6 +182,9 @@ opposition_resolu  = opposition_sans_null.withColumn(
 )
 
 opposition_resolu.show()
+
+#assemblage de la table des patients
+
 
 
 spark.stop()

@@ -274,20 +274,35 @@ patient_fhir = patient_fhir.withColumn(
 patient_fhir.select("ipp", "name").show(truncate=False)
 
 
+#on ajoute condition ici par liste de null pour le patient 800000125 sinon
 patient_fhir = patient_fhir.withColumn(
-    "address",
-    array(
-        struct(
-            array(col("ligne_adresse")).alias("line"),
-            col("ville").alias("city"),
-            col("code_postal").alias("postalCode"),
-            col("pays").alias("country")
+ "address",
+when(
+    col("ligne_adresse").isNotNull(),
+     array(
+            struct(
+                array(col("ligne_adresse")).alias("line"),
+                col("ville").alias("city"),
+                col("code_postal").alias("postalCode"),
+                col("pays").alias("country")
+            )
         )
-    )
+    ).otherwise(array())
 )
 
 patient_fhir.select("ipp", "address").show(truncate=False)
 
+patient_fhir = patient_fhir.withColumn(
+ "deceasedDateTime",
+    col("date_deces_fhir")
+)
+#s'il n'y a pas de deces alors pas de date 
+patient_fhir = patient_fhir.withColumn(
+    "deceasedBoolean",
+    when(col("date_deces_fhir").isNull(), False)
+)
+
+patient_fhir.select("ipp", "deceasedDateTime", "deceasedBoolean").show()
 
 spark.stop()
  

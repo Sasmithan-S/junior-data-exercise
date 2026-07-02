@@ -1,6 +1,6 @@
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, from_json , trim, transform, upper , try_to_date , coalesce , max as s_max
+from pyspark.sql.functions import col, when, from_json , trim, transform, upper , try_to_date , coalesce , max as s_max, struct, array, lit
 from pyspark.sql.types import ArrayType, StringType
 
 
@@ -241,6 +241,53 @@ patient_final = patient_assemble.select( col("ipp_trouve").alias("ipp"),  "nom_n
 )
 
 patient_final.show(truncate=False)
+
+
+
+
+####JSON FHIR
+
+# a partir du lien fournis : 
+
+patient_fhir = patient_final.withColumn(
+    "identifier",
+    array(
+      struct( lit("uri").alias("system"),
+            col("ipp").alias("value")
+    )
+    )
+)
+
+
+patient_fhir.select("ipp", "identifier").show(truncate=False)
+
+patient_fhir = patient_fhir.withColumn(
+    "name",
+    array(  struct(
+          col("nom_naissance").alias("family"),
+            col("prenoms_liste").alias("given"),
+            lit("official").alias("use")
+        )
+    )
+)
+
+patient_fhir.select("ipp", "name").show(truncate=False)
+
+
+patient_fhir = patient_fhir.withColumn(
+    "address",
+    array(
+        struct(
+            array(col("ligne_adresse")).alias("line"),
+            col("ville").alias("city"),
+            col("code_postal").alias("postalCode"),
+            col("pays").alias("country")
+        )
+    )
+)
+
+patient_fhir.select("ipp", "address").show(truncate=False)
+
 
 spark.stop()
  

@@ -1,6 +1,8 @@
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when
+from pyspark.sql.functions import col, when, from_json , trim
+from pyspark.sql.types import ArrayType, StringType
+
 
 spark = SparkSession.builder.appName("aphp-pipeline").getOrCreate()
  
@@ -73,5 +75,16 @@ patients_bon_ipp.show()
 patients_sans_doublons_ipp = patients_bon_ipp.filter( col("ipp") == col("ipp_trouve"))
 
 patients_sans_doublons_ipp.show()
+
+#schema pour liste de txt prenom
+schema_prenoms = ArrayType(StringType())
+
+#conversion prenoms en listes spark
+patients_prenoms_liste = patients_sans_doublons_ipp.withColumn(
+    "prenoms_liste",
+    from_json(col("prenoms"), schema_prenoms)
+)
+patients_prenoms_liste.select("ipp", "prenoms", "prenoms_liste").show(truncate=False)
+
 spark.stop()
  

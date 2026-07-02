@@ -70,5 +70,8 @@ patients_bon_ipp = df_patients.join(
 
 patients_bon_ipp.show()
 
+patients_sans_doublons_ipp = patients_bon_ipp.filter( col("ipp") == col("ipp_trouve"))
+
+patients_sans_doublons_ipp.show()
 spark.stop()
  

@@ -1,6 +1,6 @@
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, from_json , trim, transform, upper , try_to_date , coalesce
+from pyspark.sql.functions import col, when, from_json , trim, transform, upper , try_to_date , coalesce , max as s_max
 from pyspark.sql.types import ArrayType, StringType
 
 
@@ -117,8 +117,7 @@ patients_dates_naissance.select("ipp", "date_naissance", "date_naissance_fhir").
 # Meme chose pour les date de deces
 patients_dates = patients_dates_naissance.withColumn(
     "date_deces_fhir",
-    coalesce(
-    try_to_date(col("date_deces"),"yyyy-MM-dd"),
+    coalesce( try_to_date(col("date_deces"),"yyyy-MM-dd"),
         try_to_date(col("date_deces"), "dd/MM/yyyy"),
         try_to_date(col("date_deces"),"dd-MM-yyyy"),
         try_to_date(col("date_deces"), "yyyy/MM/dd")
@@ -131,12 +130,33 @@ patients_dates.select("ipp", "date_deces", "date_deces_fhir").show()
 
 #regroupement des addresses sous le meme ipp_trouve pr trouver adresse actuelle
 
-adresses_bon_ipp = df_adresses.join(
-    mapping_ipp,
+adresses_bon_ipp = df_adresses.join(  mapping_ipp,
     on="ipp",
     how="left"
 )
 
 adresses_bon_ipp.select("ipp", "ligne_adresse", "type_adresse", "date_debut", "date_fin", "ipp_trouve").show(truncate=False)
+
+#resolution de la l'adresse  la plus recente 
+# tri date la plus recente + doublons
+derniere_date_patient = adresses_bon_ipp.groupBy("ipp_trouve").agg(
+    s_max("date_debut").alias("date_debut_max")
+)
+
+derniere_date_patient.show()
+
+#join sur ipp trouve pour recopier la date max a chaque ligne d'un patient , INNER pour retirer ceux qui ont pas de correspodance
+adresses_actuelles = adresses_bon_ipp.join(  derniere_date_patient, on="ipp_trouve",
+    how="inner"
+)
+
+adresses_actuelles = adresses_actuelles.filter(
+    col("date_debut") == col("date_debut_max")
+)
+
+adresses_actuelles.select("ipp_trouve", "ligne_adresse", "ville", "date_debut").show(truncate=False)
+
+
+
 spark.stop()
  

@@ -1,53 +1,40 @@
-# Hypothèses et arbitrages
-- Résolution des IPP dépréciés: un IPP est "résolu" vers
-  `ipp_principal` s'il est renseigné, sinon vers son propre `ipp` (cas des IPP
-  actifs, ou des IPP dépréciés  sans cible connue). Une seul ligne
-  par patient réel est conservé : celle dont `ipp == ipp_trouve` 
-  (du coup la version "active"). Les champs de la version dépréciée ne sont pas
-  fusionnés avec ceux de la version active — seule la version active est
-  gardée. Limite assumée : si la version active avait un champ vide que la
-  version dépréciée avait rempli, cette information serait perdue (non traité
-  ici, cf. section "avec plus de temps").
+# NOTES.md
 
-- Dédoublonnage exact: après nettoyage des espace  dans les
-  prénoms (trim appliqué à chaque élément de la liste), les lignes
-   pareil sur toutes les colonnes sont dédupliquées
-  (dropDuplicates(), sans argument, pour ne fusionner que des lignes
-  réellement identiques et ne pas choisir  entre deux versions
-  différentes).
+j'ai pris PySpark plutôt que Scala. J'ai essayé de faire des étapes séparées et lisibles plutôt que d'enchaîner les
+transformations, pour garder le fil de ce que fait chaque bloc.
 
-- Sexe selon la fhir : mapping vers les 4 valeurs autorisées par FHIR
-  R4 (`male`, `female`, `other`, `unknown`). Toute valeur non reconnue
-  (vide, ou format imprévu) est mappée vers `unknown` plutôt que de deviner
-  ou de faire planter le pipeline.
+## Hypothèses / choix faits
 
- # Anomalies détectées et leur traitement
+Pour les IPP dépréciés dans identifiants_ipp.csv, un IPP déprécié pointe vers
+un ipp_principal qui est l'IPP actif. J'ai résolu ça avec une jointure de la
+table sur elle-même. Si ipp_principal est vide je garde l'IPP lui-même (cas
+actif, ou cas d'un IPP déprécié sans cible par ex 700000099 qui existe dans
+identifiants_ipp mais nulle part ailleurs, doit être une  donnée en trop).
+ 
+Pour fusionner les deux versions d'un même patient (actif + déprécié), j'ai
+juste gardé la ligne active et retiré la déprécié. Je n'ai pas géré le cas où
+la version active aurait un champ vide que la version dépréciée avait
+rempli -je garde juste la version active telle quelle. À améliorer si
+j'avais plus de temps
 
-- Colonne _c8 dans patients.csv: une virgule e, trop dans la ligne
-  d'en-tête crée une 9ème colonne sans nom, toujours vide. Supprimée après
-  lecture (.drop("_c8")).
+Le doublon exact sur 800000124 (juste un espace en trop dans un prénom) je
+l'ai réglé en nettoyant les espaces dans chaque prénom avant de dédupliquer,
+sinon dropDuplicates() ne le voyait pas comme un doublon 
+Pour le sexe, mapping vers male/female/unknown (FHIR n'accepte que
+male/female/other/unknown). Tout ce qui n'est pas reconnu (vide ou autre)
+part en unknown, j'ai pas voulu deviner
 
-- Parsing CSV des champs contenant des virgules entre 
-  (colonne `prenoms`, tableau JSON en texte du type `["Marie","Claire"]`) :
-  l'option Spark par défaut pour l'échappement des guillemets (`\`) ne
-  correspond pas au format utilisé dans le fichier (`""`), Corrigé en spécifiant `escape='"'` à la lecture.
+Les dates avaient 4 formats différents dans le même fichier. J'ai utilisé
+try_to_date avec coalesce pour essayer plusieurs formats dans l'ordre
+jusqu'à ce qu'un marche. Point à noter : l'ordre entre yyyy-MM-dd et
+dd-MM-yyyy peut être ambigu sur certaines dates (genre 05-03-1990), j'ai mis
+le format ISO en premier mais c'est une hypothèse, pas une certitude à 100%
 
-- IPP dépréciés multi-formats : les mêmes informations patient existent
-  en double (IPP actif / IPP déprécié), avec des divergences de casse
-  (`MARTIN` / `Martin`), d'espaces parasites, de format de sexe (`M` / `1`),
-  et de format de date. Résolues via une auto-jointure sur
-  `identifiants_ipp.csv` (cf. hypothèses ci-dessus).
+## Anomalies  dans  CSV
 
-- IPP déprécié orphelin (`700000099`) : marqué `DEPRECIE` mais sans
-  `ipp_principal` renseigné, et absent de `patients.csv`. Il ne génère donc
-  aucune ligne patient
-
-- Doublon exact avec espace parasite (800000124) : deux lignes
-  identiques à un espace près dans le prnom Marie.
-  Réglé par  avec un `trim` sur chaque élément de la liste de prénoms
-  avant dédoublonnage.
-
-- Formats de sexe : `M`, `F`, `1`, `2`, `Homme`, `Femme`,
-  `male`, valeur vide — 8 variantes pour un champ à 2 valeurs utiles.
-  Normalisées vers `male`/`female`/`unknown` (cf. hypothèses).
-
+ Virgule en trop à la fin du header de patients.csv colonne _c8
+  vide, supprimée après lecture.
+La colonne prenoms contient un tableau JSON écrit en texte
+  (["Marie","Claire"]), avec des guillemets doublés à l'intérieur. Réglé avec  escape='"'.
+ Sexe écrit de 6-7 façons différente.
+Formats de date incohérents

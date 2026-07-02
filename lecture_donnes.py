@@ -39,9 +39,17 @@ b = df_identifiants_ipp.alias("b")
 
 resolution_ipp = a.join( b ,  on= col("a.ipp_principal") == col("b.ipp"), how = "left")
 
+resolution_ipp = resolution_ipp.withColumn( "ipp_trouve", when(col("a.ipp_principal").isNotNull(), col("a.ipp_principal"))
+    .otherwise(col("a.ipp"))
+)
 resolution_ipp.select(
     col("a.ipp"), col("a.statut"), col("a.ipp_principal"),
     col("b.statut").alias("statut_droite")
+).show()
+
+resolution_ipp.select(
+    col("a.ipp"), col("a.statut"), col("a.ipp_principal"),
+    col("ipp_trouve")
 ).show()
 
 spark.stop()

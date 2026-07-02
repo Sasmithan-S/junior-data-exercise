@@ -23,16 +23,16 @@ df_opposition = spark.read.csv("resources/opposition_recherche.csv", header=True
 
 print(df_patients.columns)
 
-df_patients.show()
+#df_patients.show()
 
 print(df_adresses.columns)
-df_adresses.show()
+#df_adresses.show()
 
 print(df_identifiants_ipp.columns)
-df_identifiants_ipp.show()
+#df_identifiants_ipp.show()
 
 print(df_opposition.columns)
-df_opposition.show()
+#df_opposition.show()
 
 #join de la table df_indentifiants avec elle même
 
@@ -44,24 +44,16 @@ resolution_ipp = a.join( b ,  on= col("a.ipp_principal") == col("b.ipp"), how = 
 resolution_ipp = resolution_ipp.withColumn( "ipp_trouve", when(col("a.ipp_principal").isNotNull(), col("a.ipp_principal"))
     .otherwise(col("a.ipp"))
 )
-resolution_ipp.select(
-    col("a.ipp"), col("a.statut"), col("a.ipp_principal"),
-    col("b.statut").alias("statut_droite")
-).show()
 
-resolution_ipp.select(
-    col("a.ipp"), col("a.statut"), col("a.ipp_principal"),
-    col("ipp_trouve")
-).show()
+
 
 mapping_ipp = resolution_ipp.select( col("a.ipp").alias("ipp"),
     col("ipp_trouve")
 )
 
-mapping_ipp.show()
 
 
-# join entre patients et mapping
+# jointure entre patients et mapping pr avoir 1 ligne par ipp actif
 
 
 patients_bon_ipp = df_patients.join(
@@ -70,11 +62,12 @@ patients_bon_ipp = df_patients.join(
     how = "left"
 )
 
-patients_bon_ipp.show()
 
 patients_sans_doublons_ipp = patients_bon_ipp.filter( col("ipp") == col("ipp_trouve"))
 
-patients_sans_doublons_ipp.show()
+
+
+
 
 #schema pour liste de txt prenom
 schema_prenoms = ArrayType(StringType())
@@ -91,6 +84,12 @@ patients_prenoms_liste = patients_prenoms_liste.withColumn( "prenoms_liste", tra
 )
 
 patients_prenoms_liste.select("ipp", "prenoms_liste").show(truncate=False)
+
+
+#retrait des doublons mtn que les cases avec espaces sont similaires 
+
+patients_sans_doublons = patients_prenoms_liste.drop_duplicates()
+patients_sans_doublons.select("ipp", "prenoms_liste").show(truncate=False)
 
 spark.stop()
  

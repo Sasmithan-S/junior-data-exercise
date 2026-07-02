@@ -128,7 +128,7 @@ patients_dates = patients_dates_naissance.withColumn(
 
 
 
-patients_dates.show(truncate=False)
+#patients_dates.show(truncate=False)
 
 #regroupement des addresses sous le meme ipp_trouve pr trouver adresse actuelle
 
@@ -137,7 +137,7 @@ adresses_bon_ipp = df_adresses.join(  mapping_ipp,
     how="left"
 )
 
-adresses_bon_ipp.select("ipp", "ligne_adresse", "type_adresse", "date_debut", "date_fin", "ipp_trouve").show(truncate=False)
+#adresses_bon_ipp.select("ipp", "ligne_adresse", "type_adresse", "date_debut", "date_fin", "ipp_trouve").show(truncate=False)
 
 #resolution de la l'adresse  la plus recente 
 # tri date la plus recente + doublons
@@ -158,7 +158,7 @@ adresses_actuelles = adresses_actuelles.filter(
     col("date_debut") == col("date_debut_max")
 )
 
-adresses_actuelles.show(truncate=False)
+#adresses_actuelles.show(truncate=False)
 
 
 
@@ -183,20 +183,10 @@ opposition_resolu  = opposition_sans_null.withColumn( "opposition_fhir", when(up
 
 opposition_resolu = opposition_resolu.filter(col("ipp") == col("ipp_trouve"))
 
-opposition_resolu.show()
+#opposition_resolu.show()
 
 #assemblage de la table des patients
  
-patient_assemble = patients_dates.join( adresses_actuelles,
-    on="ipp_trouve",
- how="left"
-)
-patient_assemble = patient_assemble.join( opposition_resolu,
-    on="ipp_trouve",
-    how="left"
-)
-
-patient_assemble.show(truncate=False)
 
 
 #reduction adresse_actuelle et opposition_resolu avant jointure, on a vraiment besoin de joindre que ipp_trouve + les colonnes utiles
@@ -240,7 +230,7 @@ patient_final = patient_assemble.select( col("ipp_trouve").alias("ipp"),  "nom_n
     "opposition_fhir"
 )
 
-patient_final.show(truncate=False)
+#patient_final.show(truncate=False)
 
 
 
@@ -259,7 +249,7 @@ patient_fhir = patient_final.withColumn(
 )
 
 
-patient_fhir.select("ipp", "identifier").show(truncate=False)
+#patient_fhir.select("ipp", "identifier").show(truncate=False)
 
 patient_fhir = patient_fhir.withColumn(
     "name",
@@ -271,7 +261,7 @@ patient_fhir = patient_fhir.withColumn(
     )
 )
 
-patient_fhir.select("ipp", "name").show(truncate=False)
+#patient_fhir.select("ipp", "name").show(truncate=False)
 
 
 #on ajoute condition ici par liste de null pour le patient 800000125 sinon
@@ -290,7 +280,7 @@ when(
     ).otherwise(array())
 )
 
-patient_fhir.select("ipp", "address").show(truncate=False)
+#patient_fhir.select("ipp", "address").show(truncate=False)
 
 patient_fhir = patient_fhir.withColumn(
  "deceasedDateTime",
@@ -323,7 +313,7 @@ patient_final_fhir = patient_fhir.select(
 patient_final_fhir.show(truncate=False)
 
 
-patient_fhir.select("ipp", "deceasedDateTime", "deceasedBoolean").show()
+#patient_fhir.select("ipp", "deceasedDateTime", "deceasedBoolean").show()
 
 
 #ecriture de la sortie

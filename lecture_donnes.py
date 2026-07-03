@@ -292,8 +292,18 @@ patient_fhir = patient_fhir.withColumn(
     when(col("date_deces_fhir").isNull(), False)
 )
 
-#pas fait pour la partie opposition_recherche 
 
+patient_fhir = patient_fhir.withColumn(
+    "extension",
+  when(
+      col("opposition_fhir").isNotNull(),
+        array(
+            struct(
+           lit("uri_opposition").alias("url"), col("opposition_fhir").alias("valueBoolean")
+            )
+    )
+    ).otherwise(array())
+)
 
 
 
@@ -307,7 +317,7 @@ patient_final_fhir = patient_fhir.select(
     "deceasedBoolean",
     "deceasedDateTime",
     "address",
-    "opposition_fhir"
+    "extension"
 )
 
 patient_final_fhir.show(truncate=False)

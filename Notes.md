@@ -67,12 +67,8 @@ utilise deceasedDateTime. Sinon deceasedBoolean = false,
 on suppose que il n'y a pas de date de décès
 connue = vivant , j'avais vu que  FHIR interdit de remplir les deux en même temps.
 
-- opposition_fhir : je l'ai laissé en colonne à part, pas intégré dans la
-  structure Patient. Normalement en FHIR ça devrait passer par une
-  extension mais je ne l'ai pas fais j'ai identifié où ça devrait aller mais pas implemente pour rester dans
-  les delais. Le README ne détaille pas ce mécanisme sur la page
-  Patient donnée, je suis allé voir ailleurs dans la doc FHIR
-  extensibility.html pour comprendre comment ça marche en général.
+- opposition_fhir : Le README ne détaille pas ce mécanisme sur la page
+  Patient donnée, je suis allé voir ailleurs dans la doc FHIR  pour comprendre comment ca marche en général. 
 
 ## Format de sortie
 J'ai pris Json car FHIR est un format JSON  (les
@@ -105,8 +101,6 @@ alors que le JSON peut être utilisé tel quel. de plus je n'ai manipulé que de
 
 ## Avec plus de temps
 
-- Implementer  FHIR pour opposition_recherche au lieu de la
-  laisser en colonne à part
 - Corriger le code postal  (Lyon, 800000134)
 - Resoudre le probreme des majuscule  des noms (MARTIN vs Martin, paris vs Paris)
 - Ajouter un deuxième HumanName  pour utiliser  nom_usuel quand il est renseigné

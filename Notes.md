@@ -8,7 +8,7 @@ python3 lecture_donnes.py
 La sortie  au format FHIr qui est  un objet JSON par ligne est
 généree dans output/patient_fhir/. Le script est rejouable grace au mode overwrite.
 
-L'un des premiers exercice Spark pour moi, j'ai pris PySpark plutôt que Scala car je suis beaucoup plus a l'aise en Python. J'ai essayé de faire des étapes séparées et lisibles plutôt que d'enchaîner les transformations
+J''ai pris PySpark plutôt que Scala car je suis beaucoup plus a l'aise en Python. J'ai essayé de faire des étapes séparées et lisibles plutôt que d'enchaîner les transformations
 
 ## Hypothèses / choix faits
 
